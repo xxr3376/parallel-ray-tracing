@@ -4,6 +4,7 @@
 #include <cfloat>
 
 const int BVHTree::BLOCK_SIZE = 32;
+BVHBox* BVHTree::_piece_box = new BVHBox[BVHTree::BLOCK_SIZE];
 
 bool BVHTree::is_leaf() {
 	return l == r;
@@ -16,13 +17,13 @@ void BVHTree::create_tree(int n, Triangle *triangles) {
 	_create(0, n - 1);
 }
 
-BVHBox _piece_box [BLOCK_SIZE];
+//BVHBox _piece_box [BVHTree::BLOCK_SIZE];
 void BVHTree::_create(int l, int r) {
+	if (l == r) return;
+
 	float result = FLT_MAX;
 	int split_i = 0, type = 0;
 
-	//x
-	
 	for (int split_type = 0; split_type < 3; ++ split_type) {
 		float block_length;
 		switch (split_type) {
@@ -70,14 +71,44 @@ void BVHTree::_create(int l, int r) {
 	int left = l, right = r, li, ri;
 
 	do	{
-		li = 
-		ri = 
-	}	while();
+		do	{
+			li = _get_diff(triangles[left], type); 
+			left ++;
+		} while (li <= split_i);
+		do	{
+			ri = _get_diff(triangles[right], type);
+			right ++;
+		} while (ri > split_i);
+
+		left --;
+		right --;
+		if (left < right) {
+			std::swap(triangles[left], triangles[right]);
+			left ++;
+			right ++;
+		}
+	}	while(left >= right);
+
+	li = _get_diff(triangles[left], type); 
+	if (li > split_i) left --;
+
+	left_son = new BVHTree();
+	right_son = new BVHTree();
+
+	left_son->triangles = right_son->triangles = this->triangles;
+	left_son->box.clear();
+	right_son->box.clear();
+	for (int i = l; i <= r; ++i)
+		if (i <= left) left_son->box.add(triangles[i]);
+		else right_son->box.add(triangles[i]);
+	
+	left_son->_create(l, left);
+	right_son->_create(left+1, r);
 }
 
 int BVHTree::_get_diff(const Triangle& t, int type) {
 	float result = 0;
-	case (type) {
+	switch (type) {
 		case 0:
 			result = (t.x - box.x_range.x);
 			break;
@@ -90,8 +121,10 @@ int BVHTree::_get_diff(const Triangle& t, int type) {
 	return std::min(int(result / BLOCK_SIZE), BLOCK_SIZE - 1);
 }
 
-void BVHTree::_refresh(int& result, int& type, int& split_i, int t) {
-	}
+BVHTree::~BVHTree() {
+	if (left_son) delete left_son;
+	if (right_son) delete right_son;
+}
 
 //-------------BVHBox--------------
 void BVHBox::calc_box(Triangle *t, int n) {
@@ -112,9 +145,9 @@ bool BVHBox::is_empty() {
 
 void BVHBox::add(const Triangle& t) {
 	count ++;
-	add(t.A);
-	add(t.B);
-	add(t.C);
+	add(t.a);
+	add(t.b);
+	add(t.c);
 }
 
 void BVHBox::add(const Vector3& p) {
@@ -134,7 +167,7 @@ float BVHBox::get_surface_area() {
 	return 0;
 }
 
-void merge(const BVHBox& b) {
+void BVHBox::merge(const BVHBox& b) {
 	count += b.count;
 	x_range.x = std::min(x_range.x, b.x_range.x);
 	x_range.y = std::max(x_range.y, b.x_range.y);

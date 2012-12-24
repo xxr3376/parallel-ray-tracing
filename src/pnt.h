@@ -6,6 +6,7 @@ public:
 	float x, y, z;
 
 	Vector3(float x, float y, float z);
+	Vector3();
 
 private:
 	
@@ -16,6 +17,7 @@ public:
 	float x, y;
 	
 	Vector2(float x, float y);
+	Vector2();
 
 private:
 };

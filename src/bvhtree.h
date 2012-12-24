@@ -6,6 +6,21 @@
 #include "triangle.h"
 #include "pnt.h"
 
+class BVHBox {
+public:
+	Vector2 x_range, y_range, z_range;
+	int count;
+
+	void calc_box(Triangle *t, int n);
+	void clear();
+	bool is_empty();
+	void add(const Triangle& t);
+	void add(const Vector3& p);
+	float get_surface_area();
+	void merge(const BVHBox& b);
+private:
+};
+
 class BVHTree {
 public:
 	//用于存储这棵树表示的所有三角形
@@ -27,29 +42,17 @@ public:
 	//建树
 	void create_tree(int n, Triangle *triangles = NULL);
 
+	//析构
+	~BVHTree();
+
 private:
 	
 	void _create(int l, int r);
-	void _refresh(int& result, int& type, int& split_i, int t);
 	int _get_diff(const Triangle& t, int type);
 
 
 	static const int BLOCK_SIZE; 
-};
-
-class BVHBox {
-public:
-	Vector2 x_range, y_range, z_range;
-	int count;
-
-	void calc_box(Triangle *t, n);
-	void clear();
-	bool is_empty();
-	void add(const Triangle& t);
-	void add(const Vector3& p);
-	float get_surface_area();
-	void merge(const BVHBox& b);
-private:
+	static BVHBox *_piece_box;
 };
 
 #endif // __BVHTREE__
