@@ -1,16 +1,24 @@
 #makefile
 
 CC	=	g++
-FLAGS	=	-O1 -c
-SOURCES	=	$(wildcard *.cpp)
-OBJS	=	$(patsubst %.cpp, %.o, $(SOURCES))
+FLAGS	=	-O1
+SOURCES	=	$(filter-out main.cpp, $(wildcard *.cpp))
+OBJS	=	$(patsubst %.cpp, ../bin/%.o, $(SOURCES))
+TARGET	=	../bin/prt
 
-all	:	$(OBJS)
+all	:	$(OBJS) $(TARGET)
 
-%.o	:	%.cpp %.h
-	$(CC) $(FLAGS) -o $@ $<
+$(TARGET)	:	main.cpp $(OBJS)
+	$(CC) $(FLAGS) -o $(TARGET) $< $(OBJS)
+
+../bin/%.o	:	%.cpp %.h
+	$(CC) -c $(FLAGS) -o $@ $<
+
+show	:
+	echo $(OBJS)
 
 .PHONY	:	clean
 
 clean	:
-	rm -f *.o
+	rm -f ../bin/*.o
+	rm -f $(TARGET)
