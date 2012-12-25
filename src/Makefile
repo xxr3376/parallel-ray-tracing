@@ -22,3 +22,4 @@ show	:
 clean	:
 	rm -f ../bin/*.o
 	rm -f $(TARGET)
+	rm -f $(TARGET).exe
