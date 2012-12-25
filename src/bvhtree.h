@@ -1,10 +1,11 @@
-#ifndef __BVHTREE__
-#define __BVHTREE__
-
-#include <cstdlib>
+#ifndef __BVHTREE_H__
+#define __BVHTREE_H__
 
 #include "triangle.h"
 #include "pnt.h"
+#include "line.h"
+
+#include <cstdlib>
 
 class BVHBox {
 public:
@@ -18,6 +19,9 @@ public:
 	void add(const Vector3& p);
 	float get_surface_area();
 	void merge(const BVHBox& b);
+
+	//判交
+	bool intersect(const Line3& line) const;
 private:
 };
 
@@ -26,7 +30,7 @@ public:
 	//用于存储这棵树表示的所有三角形
 	Triangle *triangles;
 	
-	//包围和
+	//包围盒
 	//Vector2 x_range, y_range, z_range;
 	BVHBox box;
 
@@ -36,11 +40,12 @@ public:
 	//表示了这个子树下面区间[l, r]的三角形
 	int l, r;
 	
-	
 	//判断是否是叶子
-	bool is_leaf();
+	bool is_leaf() const;
 	//建树
 	void create_tree(int n, Triangle *triangles = NULL);
+	//求交
+	bool intersect(const Line3& line, Vector3& result, int& index) const;
 
 	//析构
 	~BVHTree();
@@ -55,4 +60,4 @@ private:
 	static BVHBox *_piece_box;
 };
 
-#endif // __BVHTREE__
+#endif // __BVHTREE_H__

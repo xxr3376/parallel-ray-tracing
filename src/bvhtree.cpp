@@ -2,11 +2,12 @@
 
 #include <algorithm>
 #include <cfloat>
+#include "plane.h"
 
 const int BVHTree::BLOCK_SIZE = 32;
 BVHBox* BVHTree::_piece_box = new BVHBox[BVHTree::BLOCK_SIZE];
 
-bool BVHTree::is_leaf() {
+bool BVHTree::is_leaf() const {
 	return l == r;
 }
 
@@ -121,6 +122,28 @@ int BVHTree::_get_diff(const Triangle& t, int type) {
 	return std::min(int(result / BLOCK_SIZE), BLOCK_SIZE - 1);
 }
 
+bool BVHTree::intersect(const Line3& line, Vector3& result, int& index) const {
+	if (l == r)
+		return triangles[index = l].intersect(line, result);
+	
+	int r_index;
+	Vector3 r_result;
+	bool l_flag, r_flag;
+
+	l_flag = this->left_son->box.intersect(line) && this->left_son->intersect(line, result, index);
+	r_flag = this->right_son->box.intersect(line) && this->right_son->intersect(line, r_result, r_index);
+
+	if (l_flag && r_flag)
+		r_flag = dist(result, line.o) > dist(r_result, line.o);
+	
+	if (r_flag) {
+		index = r_index;
+		result = r_result;
+	}
+
+	return l_flag || r_flag;
+}
+
 BVHTree::~BVHTree() {
 	if (left_son) delete left_son;
 	if (right_son) delete right_son;
@@ -175,4 +198,51 @@ void BVHBox::merge(const BVHBox& b) {
 	y_range.y = std::max(y_range.y, b.y_range.y);
 	z_range.x = std::min(z_range.x, b.z_range.x);
 	z_range.y = std::max(z_range.y, b.z_range.y);
+}
+
+bool BVHBox::intersect(const Line3& line) const {
+	float t_min = -FLT_MAX, t_max = FLT_MAX;
+	bool flag = false;
+
+	for (int i = 0; i < 3; ++i) {
+		float lvalue, rvalue;
+		Plane::CoordinateType type;
+		switch (i) {
+			case 0 :
+				type = Plane::X;
+				lvalue = x_range.x;
+				rvalue = x_range.y;
+				break;
+			case 1 :
+				type = Plane::Y;
+				lvalue = y_range.x;
+				rvalue = y_range.y;
+				break;
+			case 2 :
+				type = Plane::Z;
+				lvalue = z_range.x;
+				rvalue = z_range.y;
+				break;
+		}
+
+		Plane lp(lvalue, type), rp(rvalue, type);
+		Vector3 lrst, rrst;
+		bool l, r;
+
+		l = lp.intersect(line, lrst);
+		r = lp.intersect(line, rrst);
+
+		if (l && r) {
+			float tl = dist(lrst, line.o);
+			float tr = dist(rrst, line.o);
+			t_min = std::max(t_min, std::min(tl, tr));
+			t_max = std::min(t_max, std::max(tl, tr));
+		} else if (l || r) {
+			t_max = std::min(t_max, dist(l ? lrst : rrst, line.o));
+		}
+
+		flag |= l || r;
+	}
+
+	return (t_min < t_max) && flag;
 }
