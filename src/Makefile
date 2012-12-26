@@ -1,7 +1,7 @@
 #makefile
 
 CC	=	g++
-FLAGS	=	-O1 -g
+FLAGS	=	-O1 -g -pg
 CV_FLAGS = `pkg-config --libs opencv --cflags opencv`
 SOURCES	=	$(filter-out main.cpp, $(wildcard *.cpp))
 OBJS	=	$(patsubst %.cpp, ../bin/%.o, $(SOURCES))
@@ -18,9 +18,14 @@ $(TARGET)	:	main.cpp $(OBJS)
 show	:
 	echo $(OBJS)
 
-.PHONY	:	clean
+.PHONY	:	clean run benchmark
 
 clean	:
 	rm -f ../bin/*.o
 	rm -f $(TARGET)
 	rm -f $(TARGET).exe
+
+run		:
+	$(TARGET)
+benchmark :
+	gprof $(TARGET) > benchmark
