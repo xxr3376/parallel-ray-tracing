@@ -12,7 +12,6 @@ Vector3::Vector3()
 	:x(0), y(0), z(0) {
 }
 
-
 float dot(const Vector3& u, const Vector3& v) {
 	return u.x * v.x + u.y * v.y + u.z * v.z;
 }

@@ -3,7 +3,9 @@
 #include <algorithm>
 #include <cfloat>
 #include "plane.h"
+#include "common.h"
 
+int BVHTree::CCOUNT = 0;
 const int BVHTree::BLOCK_SIZE = 32;
 BVHBox* BVHTree::_piece_box = new BVHBox[BVHTree::BLOCK_SIZE];
 
@@ -130,7 +132,8 @@ float BVHTree::_get_block_length(int type) {
 
 }
 
-bool BVHTree::intersect(const Line3& line, Vector3& result, int& index) const {
+bool BVHTree::intersect(const Line3& line, Vector3& result, int& index) {
+	CCOUNT ++;
 	if (l == r)
 		return triangles[index = l].intersect(line, result);
 	
@@ -213,6 +216,7 @@ void BVHBox::merge(const BVHBox& b) {
 bool BVHBox::intersect(const Line3& line) const {
 	float t_min = -FLT_MAX, t_max = FLT_MAX;
 	bool flag = false;
+	Vector3 p_min, p_max;
 
 	for (int i = 0; i < 3; ++i) {
 		float lvalue, rvalue;
@@ -245,14 +249,42 @@ bool BVHBox::intersect(const Line3& line) const {
 		if (l && r) {
 			float tl = dist(lrst, line.o);
 			float tr = dist(rrst, line.o);
-			t_min = std::max(t_min, std::min(tl, tr));
-			t_max = std::min(t_max, std::max(tl, tr));
-		} else if (l || r) {
-			t_max = std::min(t_max, dist(l ? lrst : rrst, line.o));
+			if (tl > tr) {
+				std::swap(tl, tr);
+				std::swap(lrst, rrst);
+			}
+
+			if (t_min < tl) {
+				t_min = tl;
+				p_min = lrst;
+			}
+			if (t_max > tr) {
+				t_max = tr;
+				p_max = rrst;
+			}
+
+			//t_min = std::max(t_min, std::min(tl, tr));
+			//t_max = std::min(t_max, std::max(tl, tr));
+		} else if (l) {
+			float tl = dist(lrst, line.o);
+			if (t_max > tl) {
+				t_max = tl;
+				p_max = lrst;
+			}
+		} else if (r) {
+			//t_max = std::min(t_max, dist(l ? lrst : rrst, line.o));
+			float tr = dist(rrst, line.o);
+			if (t_max > tr) {
+				t_max = tr;
+				p_max = rrst;
+			}
 		}
 
 		flag |= l || r;
 	}
 
-	return (t_min < t_max) && flag;
+	return (t_min < t_max) && flag && 
+		x_range.x < p_max.x + EPS && x_range.y + EPS > p_max.x &&
+		y_range.x < p_max.y + EPS && y_range.y + EPS > p_max.y &&
+		z_range.x < p_max.z + EPS && z_range.y + EPS > p_max.z;
 }

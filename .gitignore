@@ -1,6 +1,4 @@
 *.swp
 *.o
 tags
-
-bin/prt
-bin/prt.exe
+bin/*
