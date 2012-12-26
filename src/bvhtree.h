@@ -45,7 +45,9 @@ public:
 	//建树
 	void create_tree(int n, Triangle *triangles = NULL);
 	//求交
-	bool intersect(const Line3& line, Vector3& result, int& index) const;
+	bool intersect(const Line3& line, Vector3& result, int& index);
+
+	static int CCOUNT;
 
 	//析构
 	~BVHTree();

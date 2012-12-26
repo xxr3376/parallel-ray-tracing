@@ -1,7 +1,6 @@
 #ifndef __PNT_H__
 #define __PNT_H__
 
-
 class Vector3 {
 public:
 	float x, y, z;
