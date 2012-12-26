@@ -1,7 +1,8 @@
 #makefile
 
 CC	=	g++
-FLAGS	=	-g
+FLAGS	=	-O1 -g
+CV_FLAGS = `pkg-config --libs opencv --cflags opencv`
 SOURCES	=	$(filter-out main.cpp, $(wildcard *.cpp))
 OBJS	=	$(patsubst %.cpp, ../bin/%.o, $(SOURCES))
 TARGET	=	../bin/prt
@@ -9,7 +10,7 @@ TARGET	=	../bin/prt
 all	:	$(OBJS) $(TARGET)
 
 $(TARGET)	:	main.cpp $(OBJS)
-	$(CC) $(FLAGS) -o $(TARGET) $< $(OBJS)
+	$(CC) $(FLAGS) -o $(TARGET) $< $(OBJS) $(CV_FLAGS) 
 
 ../bin/%.o	:	%.cpp %.h
 	$(CC) -c $(FLAGS) -o $@ $<
