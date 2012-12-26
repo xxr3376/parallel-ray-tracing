@@ -1,8 +1,9 @@
 #makefile
 
 CC	=	g++
-FLAGS	=	-O1 -g -pg
-CV_FLAGS = `pkg-config --libs opencv --cflags opencv`
+FLAGS	=	-O2
+# CV_FLAGS = `pkg-config --libs opencv --cflags opencv`
+CV_FLAGS = -I/usr/include/opencv -lopencv_core -lopencv_imgproc -lopencv_highgui
 SOURCES	=	$(filter-out main.cpp, $(wildcard *.cpp))
 OBJS	=	$(patsubst %.cpp, ../bin/%.o, $(SOURCES))
 TARGET	=	../bin/prt
@@ -26,6 +27,7 @@ clean	:
 	rm -f $(TARGET).exe
 
 run		:
+	make all
 	$(TARGET)
 benchmark :
 	gprof $(TARGET) > benchmark

@@ -1,4 +1,4 @@
-#ifdef __CAMERA_H__
+#ifndef __CAMERA_H__
 #define __CAMERA_H__
 #include "line.h"
 #include "pnt.h"
@@ -6,11 +6,18 @@
 
 
 class Camera{
-	public:
-		Camera(const Vector3& origin, const int width, const int height);
-		Line3 getSight
-
-
-
+private:
+	Vector3 startPoint;
+	Vector3 dX;
+	Vector3 dY;
+	Vector3 dZ;
+	float focalLength;
+	int width;
+	int height;
+public:
+	Camera(const Vector3 start, const Vector3 directX, const Vector3 directY, const int w, const int h);
+	Line3 getSight(int x, int y);
+	void setFocalLen(float len);
+};
 
 #endif
