@@ -152,6 +152,9 @@ bool BVHTree::intersect(const Line3& line, Vector3& result, int& index) {
 		result = r_result;
 	}
 
+	if (!(l_flag || r_flag))
+		int a;
+
 	return l_flag || r_flag;
 }
 

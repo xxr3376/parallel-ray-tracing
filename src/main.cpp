@@ -14,9 +14,14 @@ using namespace std;
 
 //int cilk_main() {
 int main() {
+	Line3 a(Vector3(0, 0, -200), Vector3(0, 1.23, 30));
+
+	Vector3 v;
+	int index;
 
 	vector<Triangle> triangles;
 	read_obj_file("../data/Sphere01.obj", triangles);
+	
 /*
 	BVHTree bvh;
 	printf("begin to build tree");
@@ -61,11 +66,7 @@ int main() {
 	BVHTree tree;
 	tree.create_tree(triangles.size(), &triangles[0]);
 
-	Line3 a(Vector3(100, 100, 100), Vector3(-100, -100, -100));
-
-	Vector3 v;
-	int index;
-
+	/*
 	int WIDTH = 800, HEIGHT = 600;
     Vector3 point;
     for (int i = 0; i < WIDTH; i++) {
@@ -79,6 +80,12 @@ int main() {
 				printf("%d %f %f\n", tree.CCOUNT, input.o.x, input.o.y);
         }
     }
+*/
+	for (int i = 0; i < triangles.size(); ++i)
+		if (triangles[i].intersect(a, v)) {
+			printf("%d\n", i);
+		}
+
 
 	tree.CCOUNT = 0;
 	if (tree.intersect(a, v, index)) {
@@ -86,7 +93,5 @@ int main() {
 		printf("%d\n", tree.CCOUNT);
 	}
 
-=======
->>>>>>> 4bdc34a66f35484e16f3c8120a82e81f8941cfa3
 	return 0;
 }
