@@ -25,8 +25,10 @@ int main() {
 
 	int WIDTH = 800, HEIGHT = 600;
 	IplImage *im = cvCreateImage(cvSize(WIDTH, HEIGHT), 8, 3);//创建一个图像
+	Vector3 point;
 	for (int i = 0; i < WIDTH; i++)
 	{
+		printf("%d\n", i);
 		//遍历每行
 		for (int j = 0; j < HEIGHT; j ++)
 		{
@@ -34,11 +36,9 @@ int main() {
 			//im->imageData[j*im->widthStep+3*i+2] = (int) r.r;
 			//im->imageData[j*im->widthStep+3*i+1] = (int) r.g;
 			//im->imageData[j*im->widthStep+3*i+0] = (int) r.b;
-			int x = i + WIDTH / 2;
-			int y = j + HEIGHT / 2;
-			printf("(%d, %d)\n", x, y);
+			float x = (i - WIDTH / 2) / 20;
+			float y = (j - HEIGHT / 2) / 20;
 			int index = 0;
-			Vector3 point;
 			Line3 input(Vector3(x, y, 0), Vector3(0, 0 ,1));
 			int k = bvh.intersect(input, point, index) * 255;
 			im->imageData[j*im->widthStep+3*i+2] = k;
@@ -56,6 +56,7 @@ int main() {
 	//namedWindow("Lena", CV_WINDOW_AUTOSIZE); 
 	//imshow("Lena", img); 
 	//waitKey();
+<<<<<<< HEAD
 */
 	BVHTree tree;
 	tree.create_tree(triangles.size(), &triangles[0]);
@@ -85,5 +86,7 @@ int main() {
 		printf("%d\n", tree.CCOUNT);
 	}
 
+=======
+>>>>>>> 4bdc34a66f35484e16f3c8120a82e81f8941cfa3
 	return 0;
 }
