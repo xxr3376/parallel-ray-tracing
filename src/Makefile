@@ -1,7 +1,7 @@
 #makefile
 
 CC	=	g++
-FLAGS	=	-O1
+FLAGS	=	-g
 SOURCES	=	$(filter-out main.cpp, $(wildcard *.cpp))
 OBJS	=	$(patsubst %.cpp, ../bin/%.o, $(SOURCES))
 TARGET	=	../bin/prt

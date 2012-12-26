@@ -24,7 +24,7 @@ Vector3 det(const Vector3& u, const Vector3& v) {
 float det(const Vector3& u, const Vector3& v, const Vector3& w) {
 	return 	u.x * (v.y * w.z - v.z * w.y) +
 			u.y * (v.z * w.x - v.x * w.z) +
-			u.z * (v.x * w.y - v.y * w.z);
+			u.z * (v.x * w.y - v.y * w.x);
 }
 
 float dist(const Vector3 &u, const Vector3 &v) {

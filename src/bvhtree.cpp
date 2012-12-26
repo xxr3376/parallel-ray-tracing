@@ -20,30 +20,25 @@ void BVHTree::create_tree(int n, Triangle *triangles) {
 
 //BVHBox _piece_box [BVHTree::BLOCK_SIZE];
 void BVHTree::_create(int l, int r) {
-	if (l == r) return;
+	this->l = l;
+	this->r = r;
+	if (l == r) {
+		left_son = right_son = NULL;
+		return;
+	}
 
 	float result = FLT_MAX;
 	int split_i = 0, type = 0;
 
 	for (int split_type = 0; split_type < 3; ++ split_type) {
-		float block_length;
-		switch (split_type) {
-			case 0 :
-				block_length = ( box.x_range.y - box.x_range.x ) / BLOCK_SIZE;
-				break;
-			case 1 :
-				block_length = ( box.y_range.y - box.y_range.x ) / BLOCK_SIZE;
-				break;
-			case 2 :
-				block_length = ( box.z_range.y - box.z_range.x ) / BLOCK_SIZE;
-		}
-		
+		float block_length = _get_block_length(split_type);
+				
 		if (block_length > 0) {
 			for (int i = 0; i < BLOCK_SIZE; ++i)
 				_piece_box[i].clear();
 
 			for (int i = l; i <= r; ++i) {
-				int t = _get_diff(triangles[i], split_type);
+				int t = _get_diff(triangles[i], block_length, split_type);
 				if (t >= BLOCK_SIZE) t = BLOCK_SIZE - 1;
 				
 				_piece_box[t].add(triangles[i]);
@@ -70,27 +65,28 @@ void BVHTree::_create(int l, int r) {
 
 
 	int left = l, right = r, li, ri;
+	float block_length = _get_block_length(type);
 
 	do	{
 		do	{
-			li = _get_diff(triangles[left], type); 
+			li = _get_diff(triangles[left], block_length, type); 
 			left ++;
 		} while (li <= split_i);
 		do	{
-			ri = _get_diff(triangles[right], type);
-			right ++;
+			ri = _get_diff(triangles[right], block_length, type);
+			right --;
 		} while (ri > split_i);
 
 		left --;
-		right --;
+		right ++;
 		if (left < right) {
 			std::swap(triangles[left], triangles[right]);
 			left ++;
-			right ++;
+			right --;
 		}
-	}	while(left >= right);
+	}	while(left < right);
 
-	li = _get_diff(triangles[left], type); 
+	li = _get_diff(triangles[left], block_length, type); 
 	if (li > split_i) left --;
 
 	left_son = new BVHTree();
@@ -107,7 +103,7 @@ void BVHTree::_create(int l, int r) {
 	right_son->_create(left+1, r);
 }
 
-int BVHTree::_get_diff(const Triangle& t, int type) {
+int BVHTree::_get_diff(const Triangle& t, float block_length, int type) {
 	float result = 0;
 	switch (type) {
 		case 0:
@@ -119,7 +115,19 @@ int BVHTree::_get_diff(const Triangle& t, int type) {
 		case 2:
 			result = (t.z - box.z_range.x);
 	}
-	return std::min(int(result / BLOCK_SIZE), BLOCK_SIZE - 1);
+	return std::min(int(result / block_length), BLOCK_SIZE - 1);
+}
+
+float BVHTree::_get_block_length(int type) {
+	switch (type) {
+		case 0 :
+			return ( box.x_range.y - box.x_range.x ) / BLOCK_SIZE;
+		case 1 :
+			return ( box.y_range.y - box.y_range.x ) / BLOCK_SIZE;
+		case 2 :
+			return ( box.z_range.y - box.z_range.x ) / BLOCK_SIZE;
+	}
+
 }
 
 bool BVHTree::intersect(const Line3& line, Vector3& result, int& index) const {
@@ -145,8 +153,10 @@ bool BVHTree::intersect(const Line3& line, Vector3& result, int& index) const {
 }
 
 BVHTree::~BVHTree() {
-	if (left_son) delete left_son;
-	if (right_son) delete right_son;
+	if (!is_leaf()) {
+		delete left_son;
+		delete right_son;
+	}
 }
 
 //-------------BVHBox--------------
@@ -230,7 +240,7 @@ bool BVHBox::intersect(const Line3& line) const {
 		bool l, r;
 
 		l = lp.intersect(line, lrst);
-		r = lp.intersect(line, rrst);
+		r = rp.intersect(line, rrst);
 
 		if (l && r) {
 			float tl = dist(lrst, line.o);

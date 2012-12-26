@@ -53,7 +53,8 @@ public:
 private:
 	
 	void _create(int l, int r);
-	int _get_diff(const Triangle& t, int type);
+	int _get_diff(const Triangle& t, float block_length, int type);
+	float _get_block_length(int type);
 
 
 	static const int BLOCK_SIZE; 

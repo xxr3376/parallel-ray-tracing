@@ -23,13 +23,16 @@ Plane::Plane(float value, CoordinateType type)
 	: n(), d(0) {
 	switch (type) {
 		case X:
-			n.x = value;
+			n.x = 1;
+			d = -value;
 			break;
 		case Y:
-			n.y = value;
+			n.y = 1;
+			d = -value;
 			break;
 		case Z:
-			n.z = value;
+			n.z = 1;
+			d = -value;
 			break;
 	}
 }
