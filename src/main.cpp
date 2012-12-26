@@ -10,41 +10,64 @@
 #include "common.h"
 #include "bvhtree.h"
 #include "camera.h"
+#include "color.h"
+#include "camera.h"
 
-//using namespace cv;
+using namespace cv;
 using namespace std;
 
+vector<Triangle> triangles;
+Vector3 light(100, 100, 100);
+BVHTree tree;
+
+Color3 rayTracing(const Line3& input, int depth, int x, int y){
+	/*
+	if (depth <= 0)
+		return Color3(0, 0, 0);
+	*/
+	int index;
+	Vector3 intersection;
+	if (tree.intersect(input, intersection, index)){
+
+		/*
+		Triangle& theOne = triangles[index];
+		Vector3 n = det(theOne.b - theOne.a, theOne.c - theOne.a).normalize();
+		if (dot(n, input.d) > 0){
+			n = n * -1;
+		}
+		Vector3 l = light - intersection;
+		if (dot(light
+		*/
+
+		return Color3(1, 1, 1);
+	}
+	if (x == 400 && (y > 150 && y < 450)){
+		printf("%f, %f, %f \t", input.o.x, input.o.y, input.o.z);
+		printf("%f, %f, %f \n", input.d.x, input.d.y, input.d.z);
+	}
+	return Color3(0, 0, 0);
+}
+//
+//
 //int cilk_main() {
 int main() {
-
-	vector<Triangle> triangles;
 	read_obj_file("../data/Sphere01.obj", triangles);
-	BVHTree tree;
 	tree.create_tree(triangles.size(), &triangles[0]);
 
-	Line3 a(Vector3(100, 100, 100), Vector3(-100, -100, -100));
-
-	Vector3 v;
-	int index;
-
+	Camera cam(Vector3(0, 0, -200), Vector3(1, 0, 0), Vector3(0, 1, 0), 800, 600);
+	cam.setFocalLen(30);
 	int WIDTH = 800, HEIGHT = 600;
+	IplImage *im = cvCreateImage(cvSize(WIDTH, HEIGHT), 8, 3);//创建一个图像
     Vector3 point;
     for (int i = 0; i < WIDTH; i++) {
 		for (int j = 0; j < HEIGHT; j ++) {
-			tree.CCOUNT = 0;
-			float x = (i - WIDTH / 2) / 20.0;
-			float y = (j - HEIGHT / 2) / 20.0;
-				int index = 0;
-				Line3 input(Vector3(x, y, 0), Vector3(0, 0 ,1));
-				int k = tree.intersect(input, point, index) * 255;
-				printf("%d %f %f\n", tree.CCOUNT, input.o.x, input.o.y);
+			Color3 c = rayTracing(cam.getSight(i, j), 10, i, j);
+			im->imageData[j*im->widthStep+3*i+2] = (int) c.r * 255;
+			im->imageData[j*im->widthStep+3*i+1] = (int) c.g * 255;
+			im->imageData[j*im->widthStep+3*i+0] = (int) c.b * 255;
         }
     }
-
-	tree.CCOUNT = 0;
-	if (tree.intersect(a, v, index)) {
-		printf("%f %f %f  |  %d\n", v.x, v.y, v.z, index);
-		printf("%d\n", tree.CCOUNT);
-	}
+	cvShowImage("rayTracing", im);
+	waitKey(0);
 	return 0;
 }

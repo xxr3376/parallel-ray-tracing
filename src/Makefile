@@ -11,7 +11,7 @@ TARGET	=	../bin/prt
 all	:	$(OBJS) $(TARGET)
 
 $(TARGET)	:	main.cpp $(OBJS)
-	$(CC) $(FLAGS) -o $(TARGET) $< $(OBJS)
+	$(CC) $(FLAGS) -o $(TARGET) $< $(OBJS) $(CV_FLAGS)
 
 ../bin/%.o	:	%.cpp %.h
 	$(CC) -c $(FLAGS) -o $@ $<

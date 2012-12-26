@@ -114,9 +114,7 @@ Vector2& Vector2::operator-= (const Vector2& u) {
 
 Vector2& Vector2::normalize() {
 	float len = sqrt(dot(*this, *this));
-
 	this->x /= len;
 	this->y /= len;
-
 	return *this;
 }
