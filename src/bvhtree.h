@@ -21,7 +21,7 @@ public:
 	void merge(const BVHBox& b);
 
 	//判交
-	bool intersect(const Line3& line) const;
+	bool intersect(const Line3& line, float& min_intersect) const;
 private:
 };
 
@@ -46,6 +46,7 @@ public:
 	void create_tree(int n, Triangle *triangles = NULL);
 	//求交
 	bool intersect(const Line3& line, Vector3& result, int& index);
+	bool intersect(const Line3& line, Vector4& result, int& index);
 
 	static int CCOUNT;
 

@@ -16,7 +16,7 @@ using namespace std;
 int main() {
 	Line3 a(Vector3(0, 0, -200), Vector3(0, 1.23, 30));
 
-	Vector3 v;
+	Vector4 v;
 	int index;
 
 	vector<Triangle> triangles;

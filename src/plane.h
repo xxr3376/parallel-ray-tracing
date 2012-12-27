@@ -19,10 +19,7 @@ public:
 	Plane(float value, CoordinateType type);
 
 	bool intersect(const Line3& line, Vector3& result) const;
-
-	static Plane create_plane_x(float y, float z);
-	static Plane create_plane_y(float x, float z);
-	static Plane create_plane_z(float x, float y);
+	bool intersect(const Line3& line, float& result) const;
 
 private:
 };

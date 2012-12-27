@@ -9,6 +9,8 @@ public:
 
 	Line3();
 	Line3(const Vector3& o, const Vector3& d);
+
+	Vector3 get_intersect(float w) const;
 private:
 };
 

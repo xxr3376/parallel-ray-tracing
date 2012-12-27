@@ -25,8 +25,20 @@ void BVHTree::_create(int l, int r) {
 	this->l = l;
 	this->r = r;
 	if (l == r) {
+		box.clear();
+		box.add(triangles[l]);
 		left_son = right_son = NULL;
 		return;
+	}
+
+	box.clear();
+	for (int i = l; i <= r; ++i) {
+		box.x_range.x = std::min(box.x_range.x, triangles[i].x);
+		box.x_range.y = std::max(box.x_range.y, triangles[i].x);
+		box.y_range.x = std::min(box.y_range.x, triangles[i].y);
+		box.y_range.y = std::max(box.y_range.y, triangles[i].y);
+		box.z_range.x = std::min(box.z_range.x, triangles[i].z);
+		box.z_range.y = std::max(box.z_range.y, triangles[i].z);
 	}
 
 	float result = FLT_MAX;
@@ -65,7 +77,6 @@ void BVHTree::_create(int l, int r) {
 		}	
 	}
 
-
 	int left = l, right = r, li, ri;
 	float block_length = _get_block_length(type);
 
@@ -95,14 +106,12 @@ void BVHTree::_create(int l, int r) {
 	right_son = new BVHTree();
 
 	left_son->triangles = right_son->triangles = this->triangles;
-	left_son->box.clear();
-	right_son->box.clear();
-	for (int i = l; i <= r; ++i)
-		if (i <= left) left_son->box.add(triangles[i]);
-		else right_son->box.add(triangles[i]);
 	
 	left_son->_create(l, left);
 	right_son->_create(left+1, r);
+
+	box = left_son->box;
+	box.merge(right_son->box);
 }
 
 int BVHTree::_get_diff(const Triangle& t, float block_length, int type) {
@@ -138,11 +147,12 @@ bool BVHTree::intersect(const Line3& line, Vector3& result, int& index) {
 		return triangles[index = l].intersect(line, result);
 	
 	int r_index;
+	float tmp;
 	Vector3 r_result;
 	bool l_flag, r_flag;
 
-	l_flag = this->left_son->box.intersect(line) && this->left_son->intersect(line, result, index);
-	r_flag = this->right_son->box.intersect(line) && this->right_son->intersect(line, r_result, r_index);
+	l_flag = this->left_son->box.intersect(line, tmp) && this->left_son->intersect(line, result, index);
+	r_flag = this->right_son->box.intersect(line, tmp) && this->right_son->intersect(line, r_result, r_index);
 
 	if (l_flag && r_flag)
 		r_flag = dist(result, line.o) > dist(r_result, line.o);
@@ -152,8 +162,34 @@ bool BVHTree::intersect(const Line3& line, Vector3& result, int& index) {
 		result = r_result;
 	}
 
-	if (!(l_flag || r_flag))
-		int a;
+	return l_flag || r_flag;
+}
+
+bool BVHTree::intersect(const Line3& line, Vector4& result, int& index) {
+	CCOUNT ++;
+	if (l == r)
+		return triangles[index = l].intersect(line, result);
+	
+	int r_index;
+	Vector4 r_result;
+	bool l_flag, r_flag;
+	float tmp;
+
+	l_flag = this->left_son->box.intersect(line, tmp) && this->left_son->intersect(line, result, index);
+	r_flag = this->right_son->box.intersect(line, tmp);
+	
+	if (r_flag) {
+		if (l_flag && tmp > result.w) r_flag = false;
+		else r_flag = this->right_son->intersect(line, r_result, r_index);
+	}
+
+	if (l_flag && r_flag)
+		r_flag = result.w > r_result.w;
+	
+	if (r_flag) {
+		index = r_index;
+		result = r_result;
+	}
 
 	return l_flag || r_flag;
 }
@@ -216,10 +252,9 @@ void BVHBox::merge(const BVHBox& b) {
 	z_range.y = std::max(z_range.y, b.z_range.y);
 }
 
-bool BVHBox::intersect(const Line3& line) const {
+bool BVHBox::intersect(const Line3& line, float& min_intersect) const {
 	float t_min = -FLT_MAX, t_max = FLT_MAX;
 	bool flag = false;
-	Vector3 p_min, p_max;
 
 	for (int i = 0; i < 3; ++i) {
 		float lvalue, rvalue;
@@ -243,48 +278,30 @@ bool BVHBox::intersect(const Line3& line) const {
 		}
 
 		Plane lp(lvalue, type), rp(rvalue, type);
-		Vector3 lrst, rrst;
+		float lrst, rrst;
 		bool l, r;
 
 		l = lp.intersect(line, lrst);
 		r = rp.intersect(line, rrst);
 
 		if (l && r) {
-			float tl = dist(lrst, line.o);
-			float tr = dist(rrst, line.o);
-			if (tl > tr) {
-				std::swap(tl, tr);
-				std::swap(lrst, rrst);
-			}
-
-			if (t_min < tl) {
-				t_min = tl;
-				p_min = lrst;
-			}
-			if (t_max > tr) {
-				t_max = tr;
-				p_max = rrst;
-			}
-
-			//t_min = std::max(t_min, std::min(tl, tr));
-			//t_max = std::min(t_max, std::max(tl, tr));
+			if (lrst > rrst) std::swap(lrst, rrst);
+			t_min = std::max(t_min, lrst);
+			t_max = std::min(t_max, rrst);
 		} else if (l) {
-			float tl = dist(lrst, line.o);
-			if (t_max > tl) {
-				t_max = tl;
-				p_max = lrst;
-			}
+			if (t_max > lrst)
+				t_max = lrst;	
 		} else if (r) {
-			//t_max = std::min(t_max, dist(l ? lrst : rrst, line.o));
-			float tr = dist(rrst, line.o);
-			if (t_max > tr) {
-				t_max = tr;
-				p_max = rrst;
-			}
+			if (t_max > rrst)
+				t_max = rrst;
 		}
 
 		flag |= l || r;
 	}
+
+	Vector3 p_max = line.get_intersect(t_max);
+
+	min_intersect = t_min;
 
 	return (t_min < t_max) && flag && 
 		x_range.x < p_max.x + EPS && x_range.y + EPS > p_max.x &&
