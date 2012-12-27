@@ -12,6 +12,7 @@
 #include "camera.h"
 #include "color.h"
 #include "camera.h"
+#include "time_c.h"
 
 using namespace cv;
 using namespace std;
@@ -27,7 +28,7 @@ vector<Triangle> triangles;
 vector<Vector3> lightList;
 vector<Mat> textures;
 BVHTree tree;
-const int MAX_DEPTH = 3;
+const int MAX_DEPTH = 10;
 Color3 rayTracing(const Line3& input, int depth){
 	Color3 result;
 	int index;
@@ -56,21 +57,17 @@ Color3 rayTracing(const Line3& input, int depth){
 						Vector4 lightPack;
 						int lightIndex;
 						int blocked = tree.intersect(toLight, lightPack, lightIndex);
-						//int blocked = 0;
-						//for (int ii = 0; ii < triangles.size(); ii++){
-						//	blocked |= triangles[ii].intersect(toLight, lightPack);
-						//}
-						
 						if (!blocked || lightLen < lightPack.w + EPS){
 							l = l * -1;
 							l.normalize();
 							Vector3 u = input.d;
 							Vector3 h = (u + l) * 0.5;
 							float tmp = pow(dot(h, n), 2);
-							tmp = fabs(tmp) ;//(1 - reflectivity - refractivity);
+							tmp = fabs(tmp) * (1 - reflectivity - refractivity);
 							Color3 self_color = Color3(k[2], k[1], k[0]) * (tmp / 255);
 							result += self_color;
 						}
+						if (result.over_max()){ return result; }
 					}
 				}
 			}
@@ -81,6 +78,7 @@ Color3 rayTracing(const Line3& input, int depth){
 				Line3 reflect(intersection, RayOut);
 				result += (rayTracing(reflect, depth - 1)* reflectivity);
 			}
+			if (result.over_max()){ return result; }
 		}
 		if (depth > 0 && refractivity > 0){
 			float refractiveIndex = triangles[index].attr->refractiveIndex; if (dot(n, input.d) > 0){
@@ -97,7 +95,7 @@ Color3 rayTracing(const Line3& input, int depth){
 
 
 void init(){
-	lightList.push_back(Vector3(5, 5, 40));
+	lightList.push_back(Vector3(5, 5, 20));
 	Mat img  = imread("../data/BabyCrocodileGreen.png"); 
 	if(!img.data) exit(-1);
 	textures.push_back(img);
@@ -110,19 +108,20 @@ void init(){
 	read_obj_file("../data/yaya.obj", triangles, a);
 	a = new Attribute();
 	a->textureNumber = 1;
-	a->reflectivity = 0.5;
-	a->refractivity = 0;
-	a->refractiveIndex = 1;
+	a->reflectivity = 0.15;
+	a->refractivity = 0.8;
+	a->refractiveIndex = 2;
 	read_obj_file("../data/Sphere02.obj", triangles, a);
 	a = new Attribute();
 	a->textureNumber = 2; 
-	a->reflectivity = 0.3;
+	a->reflectivity = 0.4;
 	read_obj_file("../data/box.obj", triangles, a);
 	tree.create_tree(triangles.size(), &triangles[0]);
 }
 
 void render(IplImage* im, const Camera& cam, int WIDTH, int HEIGHT){
 	//#pragma omp parallel for schedule(dynamic, 10)
+	time_counting tc;
 	for (int i = 0; i < WIDTH; i++) {
 		for (int j = 0; j < HEIGHT; j ++) {
 			Color3 c = rayTracing(cam.getSight(i, j), MAX_DEPTH);
@@ -132,19 +131,26 @@ void render(IplImage* im, const Camera& cam, int WIDTH, int HEIGHT){
 			im->imageData[j*im->widthStep+3*i+0] = (int) (c.b * 255);
 		}
 	}
+	printf("%lf\n", tc.get_time_sec());
 }
 //int cilk_main() {
 int main() {
 	init();
 	int WIDTH = 800, HEIGHT = 600;
-	Camera cam(Vector3(0, 0, 40), Vector3(1, 0, 0), Vector3(0, -1, 0), WIDTH, HEIGHT);
-	float focal = 12.5;
+	Camera cam(Vector3(0, 0, 20), Vector3(1, 0, 0), Vector3(0, -1, 0), WIDTH, HEIGHT);
+	float focal = 6;
 	cam.setFocalLen(focal);
+	IplImage *im = cvCreateImage(cvSize(WIDTH, HEIGHT), 8, 3);//创建一个图像
+	render(im, cam, WIDTH, HEIGHT);
+	cvSaveImage("focal_6.png", im);
+	cam.setFocalLen(13);
+	render(im, cam, WIDTH, HEIGHT);
+	cvSaveImage("focal_13.png", im);
+	/*
 	int k = 0;
 	int loop_flag;
 	while(true){
 		loop_flag = 1;
-		IplImage *im = cvCreateImage(cvSize(WIDTH, HEIGHT), 8, 3);//创建一个图像
 		render(im, cam, WIDTH, HEIGHT);
 		cvShowImage("rayTracing", im);
 		cam.print();
@@ -168,5 +174,6 @@ int main() {
 			}
 		}
 	}
+	*/
 	return 0;
 }

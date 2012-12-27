@@ -10,6 +10,7 @@ public:
 		b = B;
 	}
 	void normalize();
+	bool over_max();
 	friend Color3 operator+ (const Color3& u, const Color3& v);
 	friend Color3 operator* (const Color3& u, float x);
 	Color3& operator+= (const Color3& u);
@@ -36,6 +37,9 @@ void Color3::normalize(){
 	this->r = this->r > 1 ? 1 : this->r;
 	this->g = this->g > 1 ? 1 : this->g;
 	this->b = this->b > 1 ? 1 : this->b;
+}
+bool Color3::over_max(){
+	return (r > 1) && (g > 1) && (b > 1);
 }
 
 #endif
