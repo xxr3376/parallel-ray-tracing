@@ -51,5 +51,5 @@ bool Plane::intersect(const Line3& line, float& result) const {
 	if (fabs(result) < EPS) return false;
 	result = - (d + dot(n, line.o)) / result;
 
-	return result > 0;
+	return result > -EPS;
 }

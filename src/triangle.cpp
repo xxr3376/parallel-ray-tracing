@@ -53,10 +53,10 @@ bool Triangle::intersect(const Line3& line, Vector4& result) const {
 	if (fabs(result.w) < EPS) return false;
 
 	result.y = det(line.d, s, e2) / result.w;
-	if (result.y < 0 || result.y > 1) return false;
+	if (result.y < -EPS || result.y > 1 + EPS) return false;
 
 	result.z = det(line.d, e1, s) / result.w;
-	if (result.z < 0 || result.z > 1 || result.y + result.z > 1) return false;
+	if (result.z < -EPS || result.z > 1 + EPS || result.y + result.z > 1 + EPS) return false;
 
 	result.w = det(s, e1, e2) / result.w;
 	if (result.w <= EPS * 10) return false;

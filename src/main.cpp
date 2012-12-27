@@ -27,14 +27,14 @@ vector<Triangle> triangles;
 vector<Vector3> lightList;
 vector<Mat> textures;
 BVHTree tree;
-const int MAX_DEPTH = 10;
+const int MAX_DEPTH = 3;
 Color3 rayTracing(const Line3& input, int depth){
 	Color3 result;
 	int index;
 	Vector4 interPack;
 	if (tree.intersect(input, interPack, index)){
-		Vector3 intersection = input.get_intersect(interPack.w);
 		Triangle& theOne = triangles[index];
+		Vector3 intersection = theOne.get_intersect_point(interPack);
 		Vector3 n = det(theOne.b - theOne.a, theOne.c - theOne.a).normalize();
 		Vector3 texture_point = triangles[index].get_texture_point(interPack);
 		Mat texture = textures[triangles[index].attr->textureNumber];
@@ -42,71 +42,82 @@ Color3 rayTracing(const Line3& input, int depth){
 		float reflectivity = triangles[index].attr->reflectivity;
 		float refractivity = triangles[index].attr->refractivity;
 		Vec3b k = texture.at<Vec3b>(Min((int)floor((1 - texture_point.y) * imgSize), imgSize - 1), Min((int)(( texture_point.x) * imgSize), imgSize - 1));
-		if (dot(n, input.d) < 0){
-			for (int i = 0; i < (int) lightList.size(); i++){
-				Vector3 l = lightList[i] - intersection;
-				if (dot(l, n) > 0){
-					float lightLen = l.length();
-					Line3 toLight = Line3(intersection, l);
-					Vector4 lightPack;
-					int lightIndex;
-					int blocked = tree.intersect(toLight, lightPack, lightIndex);
-					if (!blocked || lightLen < lightPack.w + EPS){
-						l = l * -1;
-						l.normalize();
-						Vector3 u = input.d;
-						Vector3 h = (u + l) * 0.5;
-						float tmp = pow(dot(h, n), 2);
-						tmp = fabs(tmp) * (1 - reflectivity - refractivity);
-						Color3 self_color = Color3(k[2], k[1], k[0]) * (tmp / 255);
-						result += self_color;
+		if (true || dot(n, input.d) < 0){
+			if (dot(n, input.d) > 0){
+				n = n * -1;
+			}
+			if (reflectivity + refractivity < 1){
+				for (int i = 0; i < (int) lightList.size(); i++){
+					Vector3 l = lightList[i] - intersection;
+					if (dot(l, n) > 0){
+						float lightLen = l.length();
+						Line3 toLight = Line3(intersection, l);
+						toLight.o = toLight.o + toLight.d * EPS;
+						Vector4 lightPack;
+						int lightIndex;
+						int blocked = tree.intersect(toLight, lightPack, lightIndex);
+						//int blocked = 0;
+						//for (int ii = 0; ii < triangles.size(); ii++){
+						//	blocked |= triangles[ii].intersect(toLight, lightPack);
+						//}
+						
+						if (!blocked || lightLen < lightPack.w + EPS){
+							l = l * -1;
+							l.normalize();
+							Vector3 u = input.d;
+							Vector3 h = (u + l) * 0.5;
+							float tmp = pow(dot(h, n), 2);
+							tmp = fabs(tmp) ;//(1 - reflectivity - refractivity);
+							Color3 self_color = Color3(k[2], k[1], k[0]) * (tmp / 255);
+							result += self_color;
+						}
 					}
 				}
 			}
 			if (depth > 0 && reflectivity > 0){
 				Vector3 RayIn = input.d;
-				RayIn.normalize();
-				Vector3 RayOut = RayIn - (n * (dot(n, RayIn) * 2));
-				intersection += (RayOut * EPS);
+				Vector3 RayOut = RayIn + (n * (fabs(dot(n, RayIn)) * 2));
+				intersection += (RayOut * 10 * EPS);
 				Line3 reflect(intersection, RayOut);
 				result += (rayTracing(reflect, depth - 1)* reflectivity);
 			}
 		}
 		if (depth > 0 && refractivity > 0){
-			float refractiveIndex = triangles[index].attr->refractiveIndex;
-			if (dot(n, input.d) > 0){
+			float refractiveIndex = triangles[index].attr->refractiveIndex; if (dot(n, input.d) > 0){
 				refractiveIndex = 1 / refractiveIndex;
 				n = n * -1;
 			}
 			Line3 next = getRefractRay(input.d, n, intersection, refractiveIndex);
 			result += (rayTracing(next, depth - 1)* refractivity);
 		}
-		return result;
+		return result + Color3(0.05, 0.05, 0.05);
 	}
 	return Color3(0.05, 0.05, 0.05);
 }
 
 
 void init(){
-	lightList.push_back(Vector3(100, 100, 100));
-	lightList.push_back(Vector3(-100, 0, 100));
-	lightList.push_back(Vector3(0, 0, -100));
+	lightList.push_back(Vector3(5, 5, 40));
 	Mat img  = imread("../data/BabyCrocodileGreen.png"); 
 	if(!img.data) exit(-1);
 	textures.push_back(img);
 	img  = imread("../data/pure.png"); 
 	textures.push_back(img);
+	img  = imread("../data/white.png"); 
+	textures.push_back(img);
 	Attribute* a = new Attribute();
 	a->textureNumber = 0;
-	a->reflectivity = 0.4;
 	read_obj_file("../data/yaya.obj", triangles, a);
 	a = new Attribute();
 	a->textureNumber = 1;
-	a->reflectivity = 0.3;
-	a->refractivity = 0.7;
-	a->refractiveIndex = 1.2;
+	a->reflectivity = 0.5;
+	a->refractivity = 0;
+	a->refractiveIndex = 1;
 	read_obj_file("../data/Sphere02.obj", triangles, a);
-
+	a = new Attribute();
+	a->textureNumber = 2; 
+	a->reflectivity = 0.3;
+	read_obj_file("../data/box.obj", triangles, a);
 	tree.create_tree(triangles.size(), &triangles[0]);
 }
 
@@ -125,9 +136,9 @@ void render(IplImage* im, const Camera& cam, int WIDTH, int HEIGHT){
 //int cilk_main() {
 int main() {
 	init();
-	int WIDTH = 400, HEIGHT = 300;
-	Camera cam(Vector3(80, 0, 00), Vector3(0, 0, -1), Vector3(0, -1, 0), WIDTH, HEIGHT);
-	float focal = 50;
+	int WIDTH = 800, HEIGHT = 600;
+	Camera cam(Vector3(0, 0, 40), Vector3(1, 0, 0), Vector3(0, -1, 0), WIDTH, HEIGHT);
+	float focal = 12.5;
 	cam.setFocalLen(focal);
 	int k = 0;
 	int loop_flag;

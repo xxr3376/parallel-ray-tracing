@@ -91,7 +91,7 @@ void BVHTree::_create(int l, int r) {
 
 	int left = l, right = r, li, ri;
 	
-	if (type == -1) {
+	if (type != -1) {
 		float block_length = _get_block_length(type);
 		do	{
 			do	{
@@ -124,8 +124,8 @@ void BVHTree::_create(int l, int r) {
 
 	left_son->triangles = right_son->triangles = this->triangles;
 	
-	box = left_son->box;
-	box.merge(right_son->box);
+	//box = left_son->box;
+	//box.merge(right_son->box);
 
 	left_son->_create(l, left);
 	right_son->_create(left+1, r);
@@ -325,9 +325,9 @@ bool BVHBox::intersect(const Line3& line, float& min_intersect) const {
 	Vector3 p_max = line.get_intersect(t_max);
 
 	min_intersect = t_min;
-
-	return (t_min <= t_max) && flag && 
-		x_range.x < p_max.x + EPS && x_range.y + EPS > p_max.x &&
-		y_range.x < p_max.y + EPS && y_range.y + EPS > p_max.y &&
-		z_range.x < p_max.z + EPS && z_range.y + EPS > p_max.z;
+	
+	return (t_min <= t_max + EPS) && flag && 
+		x_range.x <= p_max.x + EPS && x_range.y + EPS >= p_max.x &&
+		y_range.x <= p_max.y + EPS && y_range.y + EPS >= p_max.y &&
+		z_range.x <= p_max.z + EPS && z_range.y + EPS >= p_max.z;
 }
