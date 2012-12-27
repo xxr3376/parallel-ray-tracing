@@ -5,6 +5,7 @@ public:
 	float r, g, b;
 	Color3(){ r=0; g=0; b=0;}
 	Color3(float R, float G, float B){
+		//printf("##%f, %f, %f\n", R, G, B);
 		r = R > 1 ? 1 : R;
 		g = G > 1 ? 1 : G;
 		b = B > 1 ? 1 : B;

@@ -1,7 +1,7 @@
 #makefile
 
 CC	=	g++
-FLAGS	=	-O2
+FLAGS	= -g -O2
 # CV_FLAGS = `pkg-config --libs opencv --cflags opencv`
 CV_FLAGS = -I/usr/include/opencv -lopencv_core -lopencv_imgproc -lopencv_highgui
 SOURCES	=	$(filter-out main.cpp, $(wildcard *.cpp))

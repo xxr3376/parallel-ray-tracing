@@ -32,6 +32,16 @@ void BVHTree::_create(int l, int r) {
 	float result = FLT_MAX;
 	int split_i = 0, type = 0;
 
+	box.clear();
+	for (int i = l; i <= r; ++i) {
+		box.x_range.x = std::min(box.x_range.x, triangles[i].x);
+		box.x_range.y = std::max(box.x_range.y, triangles[i].x);
+		box.y_range.x = std::min(box.y_range.x, triangles[i].y);
+		box.y_range.y = std::max(box.y_range.y, triangles[i].y);
+		box.z_range.x = std::min(box.z_range.x, triangles[i].z);
+		box.z_range.y = std::max(box.z_range.y, triangles[i].z);
+	}
+
 	for (int split_type = 0; split_type < 3; ++ split_type) {
 		float block_length = _get_block_length(split_type);
 				
@@ -101,6 +111,9 @@ void BVHTree::_create(int l, int r) {
 		if (i <= left) left_son->box.add(triangles[i]);
 		else right_son->box.add(triangles[i]);
 	
+	box = left_son->box;
+	box.merge(right_son->box);
+
 	left_son->_create(l, left);
 	right_son->_create(left+1, r);
 }
@@ -151,6 +164,9 @@ bool BVHTree::intersect(const Line3& line, Vector3& result, int& index) {
 		index = r_index;
 		result = r_result;
 	}
+
+	if (!(l_flag || r_flag))
+		int a;
 
 	return l_flag || r_flag;
 }

@@ -5,7 +5,7 @@
 #include "triangle.h"
 using std::vector;
 
-#define EPS 1e-6
+#define EPS 1e-5
 
 void read_obj_file(const char *file_name, vector<Triangle>& triangles);
 

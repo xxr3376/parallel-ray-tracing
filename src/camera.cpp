@@ -18,7 +18,6 @@ Line3 Camera::getSight(int x, int y){
 	Vector3 destZ = dZ * focalLength;
 	Vector3 to = destX + destY + destZ;
 	return Line3(startPoint, to);
-	//return Line3(Vector3(float(x - this->width / 2) / 10, float(y - this->height / 2)/ 10, 0) , Vector3(0, 0, 1));
 }
 void Camera::setFocalLen(float len){
 	focalLength = len;

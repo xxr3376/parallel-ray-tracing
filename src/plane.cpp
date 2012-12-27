@@ -20,19 +20,16 @@ Plane::Plane(const Vector3& a, const Vector3& b, const Vector3& c) {
 }
 
 Plane::Plane(float value, CoordinateType type)
-	: n(), d(0) {
+	: n(), d(-value) {
 	switch (type) {
 		case X:
 			n.x = 1;
-			d = -value;
 			break;
 		case Y:
 			n.y = 1;
-			d = -value;
 			break;
 		case Z:
 			n.z = 1;
-			d = -value;
 			break;
 	}
 }
