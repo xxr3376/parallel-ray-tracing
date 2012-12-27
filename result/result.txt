@@ -1,0 +1,74 @@
+=CPU=
+Architecture:          x86_64
+CPU op-mode(s):        32-bit, 64-bit
+Byte Order:            Little Endian
+CPU(s):                4
+On-line CPU(s) list:   0-3
+Thread(s) per core:    2
+Core(s) per socket:    2
+Socket(s):             1
+NUMA node(s):          1
+Vendor ID:             GenuineIntel
+CPU family:            6
+Model:                 37
+Stepping:              2
+CPU MHz:               2000.000
+BogoMIPS:              3989.91
+Virtualization:        VT-x
+L1d cache:             32K
+L1i cache:             32K
+L2 cache:              256K
+L3 cache:              4096K
+NUMA node0 CPU(s):     0-3
+
+=RAM=
+4G DDR3 1333
+
+
+编译参数：	-O2
+=RESULT= 单位为秒
+
+6mm和13mm分别是不同焦距的场景（就可以理解为两个不同的场景拉。。。）
+xxlayers表示跟踪了这么多层，然后是分辨率
+
+car, 11layer, 800 * 600
+	g++
+		6mm, 3.212083
+		13mm, 9.916270
+	cilk++, 4 threads
+		6mm, 3.297023
+		13mm, 9.860459
+	cilk++, 1 threads
+		6mm, 11.070599
+		13mm, 34.190667
+	openmp, 4 threads, dynamic, 10
+		6mm, 1.877977
+		13mm, 5.761973
+
+combo, 11layer, 800 * 600
+	g++
+		6mm, 35.729072
+		13mm, 48.445576
+	cilk++, 4 threads
+		6mm, 33.056562
+		13mm, 48.573298
+	cilk++, 1 threads
+		6mm, 117.820294
+		13mm, 162.447564
+	openmp, 4 threads, dynamic, 10
+		6mm, 19.932165
+		13mm, 27.702398
+
+head, 4layers, 1920 * 1080
+	g++
+		6mm, 62.552850
+		13mm, 56.988030
+	cilk++, 4 threads
+		6mm, 56.283980
+		13mm, 52.180828
+	cilk++, 1threads
+		6mm, 204.504464
+		13mm, 183.566849
+	openmp, 4threads, dynamic, 10
+		6mm, 34.938430
+		13mm, 31.960096

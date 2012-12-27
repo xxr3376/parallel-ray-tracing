@@ -28,7 +28,7 @@ vector<Triangle> triangles;
 vector<Vector3> lightList;
 vector<Mat> textures;
 BVHTree tree;
-const int MAX_DEPTH = 10;
+const int MAX_DEPTH = 3;
 Color3 rayTracing(const Line3& input, int depth){
 	Color3 result;
 	int index;
@@ -96,14 +96,17 @@ Color3 rayTracing(const Line3& input, int depth){
 
 void init(){
 	lightList.push_back(Vector3(5, 5, 20));
-	Mat img  = imread("../data/BabyCrocodileGreen.png"); 
+	Mat img;
+	Attribute* a;
+	/*
+	img = imread("../data/BabyCrocodileGreen.png"); 
 	if(!img.data) exit(-1);
 	textures.push_back(img);
 	img  = imread("../data/pure.png"); 
 	textures.push_back(img);
 	img  = imread("../data/white.png"); 
 	textures.push_back(img);
-	Attribute* a = new Attribute();
+	a = new Attribute();
 	a->textureNumber = 0;
 	read_obj_file("../data/yaya.obj", triangles, a);
 	a = new Attribute();
@@ -116,12 +119,27 @@ void init(){
 	a->textureNumber = 2; 
 	a->reflectivity = 0.4;
 	read_obj_file("../data/box.obj", triangles, a);
+	*/
+	///*
+	a = new Attribute();
+	a->textureNumber = 0;
+	a->reflectivity = 0.15;
+	img  = imread("../data/lambertian.jpg"); 
+	textures.push_back(img);
+	read_obj_file("../data/head.obj", triangles, a);
+	img  = imread("../data/white.png"); 
+	textures.push_back(img);
+	a = new Attribute();
+	a->textureNumber = 1; 
+	a->reflectivity = 0.4;
+	read_obj_file("../data/box.obj", triangles, a);
+	//*/
 	tree.create_tree(triangles.size(), &triangles[0]);
 }
 
 void render(IplImage* im, const Camera& cam, int WIDTH, int HEIGHT){
-	//#pragma omp parallel for schedule(dynamic, 10)
-	time_counting tc;
+time_counting tc;
+//#pragma omp parallel for schedule(dynamic, 10)
 	for (int i = 0; i < WIDTH; i++) {
 		for (int j = 0; j < HEIGHT; j ++) {
 			Color3 c = rayTracing(cam.getSight(i, j), MAX_DEPTH);
@@ -136,9 +154,9 @@ void render(IplImage* im, const Camera& cam, int WIDTH, int HEIGHT){
 //int cilk_main() {
 int main() {
 	init();
-	int WIDTH = 800, HEIGHT = 600;
+	int WIDTH = 1920, HEIGHT = 1080;
 	Camera cam(Vector3(0, 0, 20), Vector3(1, 0, 0), Vector3(0, -1, 0), WIDTH, HEIGHT);
-	float focal = 6;
+	float focal = 18;
 	cam.setFocalLen(focal);
 	IplImage *im = cvCreateImage(cvSize(WIDTH, HEIGHT), 8, 3);//创建一个图像
 	render(im, cam, WIDTH, HEIGHT);
