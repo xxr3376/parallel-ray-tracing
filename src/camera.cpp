@@ -28,6 +28,10 @@ void Camera::rotate(float x, float y){
 	this->_rotate(dY, y, x, 0);
 	this->_rotate(dZ, y, x, 0);
 }
+void Camera::move(float x, float y){
+	this->startPoint += (dX * x);
+	this->startPoint += (dY * y);
+}
 void Camera::_rotate(Vector3& target, float x, float y, float z){
 	Vector3 tmp = target;
 	target.x = cos(y)*cos(z) * tmp.x + cos(y)*sin(z) * tmp.y - sin(y) * tmp.z;
@@ -39,3 +43,8 @@ void Camera::_rotate(Vector3& target, float x, float y, float z){
 				cos(x)*cos(y) * tmp.z;
 }
 
+void Camera::print(){
+	printf("Start Point: (%f, %f, %f), ", startPoint.x, startPoint.y, startPoint.z);
+	printf("x Axis: (%f, %f, %f), ", dX.x, dX.y, dX.z);
+	printf("y Axis: (%f, %f, %f)\n", dY.x, dY.y, dY.z);
+}

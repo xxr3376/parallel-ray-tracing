@@ -1,13 +1,12 @@
 #include "common.h"
 
-void read_obj_file(const char *file_name, vector<Triangle>& triangles) {
+void read_obj_file(const char *file_name, vector<Triangle>& triangles, Attribute* attr) {
 	static const int BUFFER_SIZE = 10000;
 
 	FILE *fin = fopen(file_name, "r");
 	char buffer[BUFFER_SIZE];
 	vector<Vector3> points;
 	vector<Vector3> texture;
-	triangles.clear();
 		
 	while (fgets(buffer, BUFFER_SIZE - 1 , fin))
 		if (buffer[1] == ' ') {
@@ -26,12 +25,12 @@ void read_obj_file(const char *file_name, vector<Triangle>& triangles) {
 					++j;
 				}
 				if (texture.size())
-					triangles.push_back( Triangle(points[ id[0] - 1 ], points[ id[1] - 1 ], points[ id[2] - 1 ], texture[id[3] - 1], texture[id[4] - 1], texture[id[5] - 1]));
+					triangles.push_back( Triangle(points[ id[0] - 1 ], points[ id[1] - 1 ], points[ id[2] - 1 ], texture[id[3] - 1], texture[id[4] - 1], texture[id[5] - 1], attr));
 				else
-					triangles.push_back( Triangle(points[ id[0] - 1 ], points[ id[1] - 1 ], points[ id[2] - 1 ]) );
+					triangles.push_back( Triangle(points[ id[0] - 1 ], points[ id[1] - 1 ], points[ id[2] - 1 ], attr));
 			}
 		}
-		else if(buffer[1] == 't' || buffer[0] == 'v'){
+		else if(buffer[1] == 't' && buffer[0] == 'v'){
 			Vector3 vt;
 			sscanf(buffer + 2, "%f%f%f", &vt.x, &vt.y, &vt.z);
 			texture.push_back(vt);

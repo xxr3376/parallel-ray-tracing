@@ -9,6 +9,12 @@ Triangle::Triangle (const Vector3& a, const Vector3& b, const Vector3& c)
 	y = (a.y + b.y + c.y) / 3;
 	z = (a.z + b.z + c.z) / 3;
 }
+Triangle::Triangle (const Vector3& a, const Vector3& b, const Vector3& c, Attribute* attr)
+	: a(a), b(b), c(c), ta(), tb(), tc(), attr(attr) {
+	x = (a.x + b.x + c.x) / 3;
+	y = (a.y + b.y + c.y) / 3;
+	z = (a.z + b.z + c.z) / 3;
+}
 
 Triangle::Triangle (const Vector3& a, const Vector3& b, const Vector3& c, const Vector3& ta, const Vector3& tb, const Vector3& tc)
 	: a(a), b(b), c(c), ta(ta), tb(tb), tc(tc), attr() {
@@ -17,7 +23,7 @@ Triangle::Triangle (const Vector3& a, const Vector3& b, const Vector3& c, const 
 	z = (a.z + b.z + c.z) / 3;
 }
 
-Triangle::Triangle (const Vector3& a, const Vector3& b, const Vector3& c, const Vector3& ta, const Vector3& tb, const Vector3& tc, const Attribute& attr)
+Triangle::Triangle (const Vector3& a, const Vector3& b, const Vector3& c, const Vector3& ta, const Vector3& tb, const Vector3& tc, Attribute* attr)
 	: a(a), b(b), c(c), ta(ta), tb(tb), tc(tc), attr(attr) {
 	x = (a.x + b.x + c.x) / 3;
 	y = (a.y + b.y + c.y) / 3;
@@ -53,7 +59,7 @@ bool Triangle::intersect(const Line3& line, Vector4& result) const {
 	if (result.z < 0 || result.z > 1 || result.y + result.z > 1) return false;
 
 	result.w = det(s, e1, e2) / result.w;
-	if (result.w <= 0) return false;
+	if (result.w <= EPS * 10) return false;
 
 	result.x = 1 - result.y - result.z;
 

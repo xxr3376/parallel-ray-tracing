@@ -19,6 +19,8 @@ public:
 	Line3 getSight(int x, int y) const;
 	void setFocalLen(float len);
 	void rotate(float x, float y);
+	void move(float x, float y);
+	void print();
 private:
 	void _rotate(Vector3& target, float x, float y, float z); 
 };

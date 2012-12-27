@@ -7,7 +7,7 @@ public:
 
 	Vector3(float x, float y, float z);
 	Vector3();
-
+	float length();
 	//点积
 	friend float dot(const Vector3& u, const Vector3& v);
 	//叉积

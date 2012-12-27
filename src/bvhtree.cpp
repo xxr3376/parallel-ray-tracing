@@ -5,6 +5,8 @@
 #include "plane.h"
 #include "common.h"
 
+#include <cstdio>
+
 int BVHTree::CCOUNT = 0;
 const int BVHTree::BLOCK_SIZE = 32;
 BVHBox* BVHTree::_piece_box = new BVHBox[BVHTree::BLOCK_SIZE];
@@ -42,7 +44,7 @@ void BVHTree::_create(int l, int r) {
 	}
 
 	float result = FLT_MAX;
-	int split_i = 0, type = 0;
+	int split_i = 0, type = -1;
 
 	box.clear();
 	for (int i = l; i <= r; ++i) {
@@ -57,7 +59,7 @@ void BVHTree::_create(int l, int r) {
 	for (int split_type = 0; split_type < 3; ++ split_type) {
 		float block_length = _get_block_length(split_type);
 				
-		if (block_length > 0) {
+		if (block_length > EPS) {
 			for (int i = 0; i < BLOCK_SIZE; ++i)
 				_piece_box[i].clear();
 
@@ -88,30 +90,35 @@ void BVHTree::_create(int l, int r) {
 	}
 
 	int left = l, right = r, li, ri;
-	float block_length = _get_block_length(type);
-
-	do	{
+	
+	if (type == -1) {
+		float block_length = _get_block_length(type);
 		do	{
-			li = _get_diff(triangles[left], block_length, type); 
-			left ++;
-		} while (li <= split_i);
-		do	{
-			ri = _get_diff(triangles[right], block_length, type);
-			right --;
-		} while (ri > split_i);
+			do	{
+				li = _get_diff(triangles[left], block_length, type); 
+				left ++;
+			} while (li <= split_i);
+			do	{
+				ri = _get_diff(triangles[right], block_length, type);
+				right --;
+			} while (ri > split_i);
 
-		left --;
-		right ++;
-		if (left < right) {
-			std::swap(triangles[left], triangles[right]);
-			left ++;
-			right --;
-		}
-	}	while(left < right);
+			left --;
+			right ++;
+			if (left < right) {
+				std::swap(triangles[left], triangles[right]);
+				left ++;
+				right --;
+			}
+		}	while(left < right);
 
-	li = _get_diff(triangles[left], block_length, type); 
-	if (li > split_i) left --;
+		li = _get_diff(triangles[left], block_length, type); 
+		if (li > split_i) left --;
+	} else {
+		left = l + r >> 1;
+	}
 
+	
 	left_son = new BVHTree();
 	right_son = new BVHTree();
 
@@ -319,7 +326,7 @@ bool BVHBox::intersect(const Line3& line, float& min_intersect) const {
 
 	min_intersect = t_min;
 
-	return (t_min < t_max) && flag && 
+	return (t_min <= t_max) && flag && 
 		x_range.x < p_max.x + EPS && x_range.y + EPS > p_max.x &&
 		y_range.x < p_max.y + EPS && y_range.y + EPS > p_max.y &&
 		z_range.x < p_max.z + EPS && z_range.y + EPS > p_max.z;

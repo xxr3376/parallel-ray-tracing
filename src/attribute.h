@@ -4,6 +4,10 @@
 class Attribute {
 public:
 	Attribute();
+	int textureNumber;
+	float reflectivity;
+	float refractiveIndex;
+	float refractivity;
 private:
 };
 
