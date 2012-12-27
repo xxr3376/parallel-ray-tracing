@@ -20,7 +20,7 @@ int main() {
 	int index;
 
 	vector<Triangle> triangles;
-	read_obj_file("../data/Sphere01.obj", triangles);
+	read_obj_file("../data/yaya.obj", triangles);
 	
 /*
 	BVHTree bvh;
