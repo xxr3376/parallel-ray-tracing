@@ -45,3 +45,11 @@ bool Plane::intersect(const Line3& line, Vector3& result) const {
 	return true;
 }
 
+bool Plane::intersect(const Line3& line, float& result) const {
+	result = dot(n, line.d);
+
+	if (fabs(result) < EPS) return false;
+	result = - (d + dot(n, line.o)) / result;
+
+	return result > 0;
+}

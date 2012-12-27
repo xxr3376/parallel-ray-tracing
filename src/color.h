@@ -5,11 +5,11 @@ public:
 	float r, g, b;
 	Color3(){ r=0; g=0; b=0;}
 	Color3(float R, float G, float B){
-		//printf("##%f, %f, %f\n", R, G, B);
-		r = R > 1 ? 1 : R;
-		g = G > 1 ? 1 : G;
-		b = B > 1 ? 1 : B;
+		r = R;
+		g = G;
+		b = B;
 	}
+	void normalize();
 	friend Color3 operator+ (const Color3& u, const Color3& v);
 	friend Color3 operator* (const Color3& u, float x);
 	Color3& operator+= (const Color3& u);
@@ -26,14 +26,13 @@ Color3& Color3::operator+= (const Color3& u){
 	this->r += u.r;
 	this->g += u.g;
 	this->b += u.b;
-	this->r = this->r > 1 ? 1 : this->r;
-	this->g = this->g > 1 ? 1 : this->g;
-	this->b = this->b > 1 ? 1 : this->b;
 }
 Color3& Color3::operator*= (float x){
 	this->r *= x;
 	this->g *= x;
 	this->b *= x;
+}
+void Color3::normalize(){
 	this->r = this->r > 1 ? 1 : this->r;
 	this->g = this->g > 1 ? 1 : this->g;
 	this->b = this->b > 1 ? 1 : this->b;

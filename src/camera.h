@@ -16,8 +16,11 @@ private:
 	int height;
 public:
 	Camera(const Vector3 start, const Vector3 directX, const Vector3 directY, const int w, const int h);
-	Line3 getSight(int x, int y);
+	Line3 getSight(int x, int y) const;
 	void setFocalLen(float len);
+	void rotate(float x, float y);
+private:
+	void _rotate(Vector3& target, float x, float y, float z); 
 };
 
 #endif
